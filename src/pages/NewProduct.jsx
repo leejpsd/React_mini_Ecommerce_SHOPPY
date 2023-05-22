@@ -1,15 +1,17 @@
 import React, { useState } from "react";
+import { addNewProduct } from "../api/firebase";
 import { uploadImage } from "../api/uploader";
 import Button from "../components/ui/Button";
 
 export default function NewProduct() {
   const [product, setProduct] = useState({});
   const [file, setFile] = useState();
+  const [isUploading, setIsUploading] = useState(false);
+  const [success, setSuccess] = useState();
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "file") {
-      console.log(files);
       setFile(files && files[0]);
       return;
     }
@@ -18,15 +20,31 @@ export default function NewProduct() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    uploadImage(file).then((url) => {
-      console.log(url);
-    });
+    setIsUploading(true);
+    uploadImage(file)
+      .then((url) => {
+        addNewProduct(product, url).then(() => {
+          setSuccess("성공적으로 제품이 추가되었습니다.");
+          setTimeout(() => {
+            setSuccess(null);
+          }, 4000);
+        });
+      })
+      .finally(() => setIsUploading(false));
   };
 
   return (
-    <section>
-      {file && <img src={URL.createObjectURL(file)} alt="local file" />}
-      <form onSubmit={handleSubmit} action="">
+    <section className="w-full text-center">
+      <h2 className="text-2xl font-bold my-4">새로운제품등록</h2>
+      {success && <p className="my-2">💚{success}💚</p>}
+      {file && (
+        <img
+          className="w-96 mx-auto mb-2"
+          src={URL.createObjectURL(file)}
+          alt="local file"
+        />
+      )}
+      <form className="flex flex-col px-12" onSubmit={handleSubmit} action="">
         <input
           type="file"
           accept="image/*"
@@ -74,7 +92,10 @@ export default function NewProduct() {
           required
           onChange={handleChange}
         />
-        <Button text={"제품 등록하기"} />
+        <Button
+          text={isUploading ? "업로드중..." : "제품 등록하기"}
+          disabled={isUploading}
+        />
       </form>
     </section>
   );
