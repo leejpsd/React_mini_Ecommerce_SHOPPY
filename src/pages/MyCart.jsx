@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 import { FaEquals } from "react-icons/fa";
